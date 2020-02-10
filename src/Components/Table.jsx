@@ -1,5 +1,7 @@
 import React from 'react'
 import styled from 'styled-components';
+import PropTypes from 'prop-types';
+
 
 const StyledTable = styled.table`
     border-collapse: collapse;
@@ -60,6 +62,8 @@ export const StyledTd = styled.td`
     padding: 0 5px;
 `
 
+// takes function to make th tags - can take headData as argument 
+// styled component tag - StyledTh
 const TableHead = props => (
     <thead>
         <StyledTableHeadRow>
@@ -70,6 +74,9 @@ const TableHead = props => (
     </thead>
 );
 
+// if table head is split in two
+// takes functions to create th tags for each
+// styled component tags - StyledTh and StyledThTop
 const DoubleTableHead = props => (
     <thead>
         <StyledDoubleTableHeadRow top={true}>
@@ -85,6 +92,8 @@ const DoubleTableHead = props => (
     </thead>
 );
 
+// takes function to make td tags
+// styled component tag - StyledTd
 const TableBody = props => (
     <tbody>
         {
@@ -99,19 +108,12 @@ const TableBody = props => (
             })
         }
     </tbody>
-    );
+);
 
 // export and use outside
-export default function table(props) {
+export default function Table(props) {
     return(
-        <StyledTable
-            // tableposition={props.tablePosition}
-            // tablezindex={props.tableZIndex}
-            // tableleft={props.tableLeft}
-            // tableright={props.tableRight}
-            // tableboxshadowright={props.tableBoxShadowRight}
-            // tableboxshadowleft={props.tableBoxShadowLeft}
-        >
+        <StyledTable>
             {
                 // if you pass a getHeadTop function it will split the table head rows in two
                 // will possibly need a colSpan or rowSpan attribute on your th tag
@@ -120,4 +122,13 @@ export default function table(props) {
             <TableBody {...props} />
         </StyledTable>
     );
+}
+
+Table.propTypes = {
+    // data for each table row in an array
+    dataArr: PropTypes.array.isRequired,
+    // function or element to create each styled td tag - StyledTd
+    getBody: PropTypes.func.isRequired,
+    // function or element to create each styled th tag - StyledTh or StyledThTop
+    getHead: PropTypes.func.isRequired
 }

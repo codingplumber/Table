@@ -1,8 +1,6 @@
 import React, { Component } from 'react'
 import styled from 'styled-components';
 import { data } from '../data.js';
-
-
 import Table from '../Components/Table';
 import { StyledTd, StyledTh, StyledThTop } from '../Components/Table';
 
@@ -22,6 +20,7 @@ const LeftStyle = styled.div`
     left: 0;
     z-index: 4;
     box-shadow: 5px 0 5px -5px #333;
+    height: fit-content;
 `
 
 const StyledCloseButton = styled.div`
@@ -30,7 +29,9 @@ const StyledCloseButton = styled.div`
 
 export default class MainBody extends Component {
     state = {
+        // fake data
         dataArr: data,
+        // months for header
         headData: [
             'January',
             'February',
@@ -68,22 +69,22 @@ export default class MainBody extends Component {
     };
 
     // left table rows
-    createRows = x => (
+    createRows = tdData => (
         <React.Fragment>
             <StyledTd>
-                {x.item}
+                {tdData.item}
             </StyledTd>
             <StyledTd>
-                {x.description}
+                {tdData.description}
             </StyledTd>
             <StyledTd>
-                {x.cost}
+                {tdData.cost}
             </StyledTd>
             <StyledTd>
-                {x.price}
+                {tdData.price}
             </StyledTd>
             <StyledTd last={true}>
-                {x.itemId}
+                {tdData.itemId}
             </StyledTd>
         </React.Fragment>
     );
@@ -111,10 +112,10 @@ export default class MainBody extends Component {
     );
 
     // right tables rows
-    createYearsRows = x => (
+    createYearsRows = tdData => (
         <React.Fragment>
             {
-                x.map((x, i, arr) => {
+                tdData.map((x, i, arr) => {
                     return (
                         <StyledTd last={arr.length - 1 === i} key={x.month.toString() + x.year.toString() + i.toString()}>
                             {x.total}
@@ -125,6 +126,7 @@ export default class MainBody extends Component {
         </React.Fragment>
     );
 
+    // closed years header top
     createYearsHeaderTopClosed = year => (
         <StyledThTop zindex={3} last={true}>
             <StyledCloseButton onClick={this.handleCloseYear(year)}>
@@ -133,17 +135,26 @@ export default class MainBody extends Component {
         </StyledThTop>
     );
 
-    // right tables bottom header
+    // right tables bottom header closed
     createYearsHeaderClosed = () => <StyledTh top='20px' last={true} zindex={3} />;
 
-    // right tables rows
-    createYearsRowsClosed = x => (
+    // right tables rows closed
+    createYearsRowsClosed = () => (
         <StyledTd last={true}>
             <div style={{width: 75}} />
         </StyledTd>
     );
 
+    // opens / closes year table
     handleCloseYear = year => () => {
+
+
+        // stop from closing all year tables if only year table is left open
+        if (this.getOpenYearData().length === 1 && !this.state.closedTableYears.includes(year)) {
+            return;
+        }
+
+        // add or remove year from list of years that have closed tables
         const closedTableYears = this.state.closedTableYears.includes(year) ?
             this.state.closedTableYears.filter(x => x !== year).sort((a, b) => a - b) :
             [...this.state.closedTableYears, year].sort((a, b) => a - b);
@@ -153,14 +164,21 @@ export default class MainBody extends Component {
         });
     };
 
-    render() {
+    // gets list of years that should have open tables
+    getOpenYearData = () => {
+        // all years from my data
         const allYears = this.state.dataArr[0].dataByMonth.map(x => x.year);
-        const sortedYears = [...new Set(allYears)];
-        const years = sortedYears.filter(x => this.state.closedTableYears.includes(x) ? false : true);
+        // removes duplicates and sorts
+        const sortedYears = [...new Set(allYears)].sort((a, b) => a - b);
+        // years list minus the closed table years
+        return sortedYears.filter(x => this.state.closedTableYears.includes(x) ? false : true);
+    };
 
+    render() {
         return (
             <Wrapper>
                 <LeftStyle>
+                    {/* high level table data */}
                     <Table
                         dataArr={this.state.dataArr}
                         getBody={this.createRows}
@@ -177,6 +195,7 @@ export default class MainBody extends Component {
                                 });
 
                                 return (
+                                    // closed years table data
                                     <Table
                                         key={i}
                                         dataArr={rowData}
@@ -190,7 +209,7 @@ export default class MainBody extends Component {
                     }
                 </LeftStyle>
                 {
-                    years.map((x, i) => {
+                    this.getOpenYearData().map((x, i) => {
                         // pull out data separated and sorted by years to fill in table values
                         const rowData = this.state.dataArr.map(y => {
                             return y.dataByMonth
@@ -199,6 +218,7 @@ export default class MainBody extends Component {
                         });
 
                         return (
+                            // open years table data
                             <Table
                                 key={i}
                                 dataArr={rowData}
